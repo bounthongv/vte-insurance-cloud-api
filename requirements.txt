@@ -1,0 +1,10 @@
+# Flask framework for building the web API
+flask
+
+# ODBC driver for connecting to Microsoft SQL Server
+pyodbc
+
+# For loading environment variables from a .env file
+python-dotenv
+
+waitress

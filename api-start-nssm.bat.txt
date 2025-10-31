@@ -1,0 +1,5 @@
+@echo off
+d:
+cd d:\VteInsurance\cloud
+call venv\Scripts\activate
+python -m waitress --port=5000 api:app >> logs\output.log 2>> logs\error.log

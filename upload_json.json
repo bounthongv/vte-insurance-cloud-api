@@ -1,0 +1,35 @@
+{
+  "keyCode": "VTI",
+  "signDate": "2024 dec 15",
+  "ORDER_NO": "5",
+  "signature": "9ea18000af4ca87ce24067a5c7dbd7fe",
+  "INV": {
+    "INV_NO": "6",
+    "SALE_CNT": 1,
+    "SUPL_AMT": 4000.0,
+    "VAT_AMT": 40.0,
+    "SALE_AMT": 4000.0,
+    "DISC_AMT": 10.0,
+    "CUST_TIN": "1234578",
+    "CUST_FULL_NM": "apis",
+    "CUST_ADDR": "Lao Thai Road",
+    "CUST_TEL": "12345678",
+    "CUST_ACCNO": null,
+    "CUST_ACCNAM": null,
+    "PAY_TYPE": null,
+    "CREATE_DATE": "2024 dec 16",
+    "UPDATE_DATE": "2024 dec 16",
+    "ORDER_TYPE": null,
+    "INV_DETAIL": [
+      {
+        "PROD_CD": "23",
+        "PROD_NM": "Sealion byd",
+        "SALE_CNT": 1,
+        "UNIT_SALE": "ຄັນ",
+        "UNIT_SALE_AMT": 2000000.0,
+        "VAT_AMT": 40000.0,
+        "SALE_AMT": 3300000.0
+      }
+    ]
+  }
+}
