@@ -95,34 +95,36 @@ def upload_expense():
         cursor.execute(expense_query, exp_no)
 
         # Insert into 'tbl_dr'
-        dr_query = "INSERT INTO tbl_dr (exp_no, exp_id, dr_ac, dr_amt) VALUES (?, ?, ?, ?)"
+        dr_query = "INSERT INTO tbl_dr (exp_no, exp_id, dr_ac, dr_amt, exp_desc) VALUES (?, ?, ?, ?, ?)"
         for item in debit_entries:
             # Validate that each debit item has the required keys
-            if not all(k in item for k in ['exp_id', 'dr_ac', 'dr_amt']):
+            if not all(k in item for k in ['exp_id', 'dr_ac', 'dr_amt', 'exp_desc']):
                 conn.rollback() # Important: undo the main insert if child data is bad
-                return jsonify({"error": "A debit entry is missing a required field (exp_id, dr_ac, or dr_amt)"}), 400
+                return jsonify({"error": "A debit entry is missing a required field (exp_id, dr_ac, dr_amt, or exp_desc)"}), 400
             
         
             exp_id = clean_string(item.get('exp_id'))
             dr_ac = clean_string(item.get('dr_ac'))
             dr_amt = Decimal(str(item.get('dr_amt', '0')).replace(',', ''))
+            exp_desc = clean_string(item.get('exp_desc'))
             
-            dr_params = (exp_no, exp_id, dr_ac, dr_amt)
+            dr_params = (exp_no, exp_id, dr_ac, dr_amt, exp_desc)
             cursor.execute(dr_query, dr_params)
         
         # Insert into 'tbl_cr'
-        cr_query = "INSERT INTO tbl_cr (exp_no, exp_id, cr_ac, cr_amt) VALUES (?, ?, ?, ?)"
+        cr_query = "INSERT INTO tbl_cr (exp_no, exp_id, cr_ac, cr_amt, exp_desc) VALUES (?, ?, ?, ?, ?)"
         for item in credit_entries:
             # Validate that each credit item has the required keys
-            if not all(k in item for k in ['exp_id', 'cr_ac', 'cr_amt']):
+            if not all(k in item for k in ['exp_id', 'cr_ac', 'cr_amt', 'exp_desc']):
                 conn.rollback() # Important: undo all previous inserts
-                return jsonify({"error": "A credit entry is missing a required field (exp_id, cr_ac, or cr_amt)"}), 400
+                return jsonify({"error": "A credit entry is missing a required field (exp_id, cr_ac, cr_amt, or exp_desc)"}), 400
 
             exp_id = clean_string(item.get('exp_id'))
             cr_ac = clean_string(item.get('cr_ac'))
             cr_amt = Decimal(str(item.get('cr_amt', '0')).replace(',', ''))
+            exp_desc = clean_string(item.get('exp_desc'))
 
-            cr_params = (exp_no, exp_id, cr_ac, cr_amt)
+            cr_params = (exp_no, exp_id, cr_ac, cr_amt, exp_desc)
             cursor.execute(cr_query, cr_params)
 
         # If all inserts were successful, commit the transaction
