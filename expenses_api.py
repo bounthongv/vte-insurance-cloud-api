@@ -30,10 +30,11 @@ def upload_expense():
         exp_no = clean_string(data.get("exp_no"))
         client_signature = data.get("sign")
         exp_data = data.get("exp")
+        exp_desc = exp_data.get("exp_desc") if exp_data else None
 
         # Validate presence of required fields
-        if not all([key_code, sign_date, exp_no, client_signature, exp_data]):
-            return jsonify({"error": "Missing required fields: keyCode, signDate, exp_no, sign, or exp object"}), 400
+        if not all([key_code, sign_date, exp_no, client_signature, exp_data, exp_desc]):
+            return jsonify({"error": "Missing required fields: keyCode, signDate, exp_no, sign, exp object, or exp_desc"}), 400
 
         if key_code != "VTI":
             return jsonify({"error": "Invalid keyCode"}), 400
@@ -89,42 +90,40 @@ def upload_expense():
         # Status is hardcoded to 'wait' for security and workflow consistency.
         # create_date and update_date are handled by the database for accuracy.
         expense_query = """
-            INSERT INTO expense (exp_no, status, create_date, update_date)
-            VALUES (?, 'wait', GETDATE(), GETDATE())
+            INSERT INTO expense (exp_no, status, exp_desc, create_date, update_date)
+            VALUES (?, 'wait', ?, GETDATE(), GETDATE())
         """
-        cursor.execute(expense_query, exp_no)
+        cursor.execute(expense_query, exp_no, exp_desc)
 
         # Insert into 'tbl_dr'
-        dr_query = "INSERT INTO tbl_dr (exp_no, exp_id, dr_ac, dr_amt, exp_desc) VALUES (?, ?, ?, ?, ?)"
+        dr_query = "INSERT INTO tbl_dr (exp_no, exp_id, dr_ac, dr_amt) VALUES (?, ?, ?, ?)"
         for item in debit_entries:
             # Validate that each debit item has the required keys
-            if not all(k in item for k in ['exp_id', 'dr_ac', 'dr_amt', 'exp_desc']):
+            if not all(k in item for k in ['exp_id', 'dr_ac', 'dr_amt']):
                 conn.rollback() # Important: undo the main insert if child data is bad
-                return jsonify({"error": "A debit entry is missing a required field (exp_id, dr_ac, dr_amt, or exp_desc)"}), 400
+                return jsonify({"error": "A debit entry is missing a required field (exp_id, dr_ac, or dr_amt)"}), 400
             
         
             exp_id = clean_string(item.get('exp_id'))
             dr_ac = clean_string(item.get('dr_ac'))
             dr_amt = Decimal(str(item.get('dr_amt', '0')).replace(',', ''))
-            exp_desc = clean_string(item.get('exp_desc'))
             
-            dr_params = (exp_no, exp_id, dr_ac, dr_amt, exp_desc)
+            dr_params = (exp_no, exp_id, dr_ac, dr_amt)
             cursor.execute(dr_query, dr_params)
         
         # Insert into 'tbl_cr'
-        cr_query = "INSERT INTO tbl_cr (exp_no, exp_id, cr_ac, cr_amt, exp_desc) VALUES (?, ?, ?, ?, ?)"
+        cr_query = "INSERT INTO tbl_cr (exp_no, exp_id, cr_ac, cr_amt) VALUES (?, ?, ?, ?)"
         for item in credit_entries:
             # Validate that each credit item has the required keys
-            if not all(k in item for k in ['exp_id', 'cr_ac', 'cr_amt', 'exp_desc']):
+            if not all(k in item for k in ['exp_id', 'cr_ac', 'cr_amt']):
                 conn.rollback() # Important: undo all previous inserts
-                return jsonify({"error": "A credit entry is missing a required field (exp_id, cr_ac, cr_amt, or exp_desc)"}), 400
+                return jsonify({"error": "A credit entry is missing a required field (exp_id, cr_ac, or cr_amt)"}), 400
 
             exp_id = clean_string(item.get('exp_id'))
             cr_ac = clean_string(item.get('cr_ac'))
             cr_amt = Decimal(str(item.get('cr_amt', '0')).replace(',', ''))
-            exp_desc = clean_string(item.get('exp_desc'))
 
-            cr_params = (exp_no, exp_id, cr_ac, cr_amt, exp_desc)
+            cr_params = (exp_no, exp_id, cr_ac, cr_amt)
             cursor.execute(cr_query, cr_params)
 
         # If all inserts were successful, commit the transaction
