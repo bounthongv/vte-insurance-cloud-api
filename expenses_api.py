@@ -99,9 +99,9 @@ def upload_expense():
         dr_query = "INSERT INTO tbl_dr (exp_no, exp_id, dr_ac, dr_amt) VALUES (?, ?, ?, ?)"
         for item in debit_entries:
             # Validate that each debit item has the required keys
-            if not all(k in item for k in ['exp_id', 'dr_ac', 'dr_amt']):
+            if not all(k in item for k in ['dr_ac', 'dr_amt']):
                 conn.rollback() # Important: undo the main insert if child data is bad
-                return jsonify({"error": "A debit entry is missing a required field (exp_id, dr_ac, or dr_amt)"}), 400
+                return jsonify({"error": "A debit entry is missing a required field (dr_ac, or dr_amt)"}), 400
             
         
             exp_id = clean_string(item.get('exp_id'))
@@ -115,9 +115,9 @@ def upload_expense():
         cr_query = "INSERT INTO tbl_cr (exp_no, exp_id, cr_ac, cr_amt) VALUES (?, ?, ?, ?)"
         for item in credit_entries:
             # Validate that each credit item has the required keys
-            if not all(k in item for k in ['exp_id', 'cr_ac', 'cr_amt']):
+            if not all(k in item for k in ['cr_ac', 'cr_amt']):
                 conn.rollback() # Important: undo all previous inserts
-                return jsonify({"error": "A credit entry is missing a required field (exp_id, cr_ac, or cr_amt)"}), 400
+                return jsonify({"error": "A credit entry is missing a required field (cr_ac, or cr_amt)"}), 400
 
             exp_id = clean_string(item.get('exp_id'))
             cr_ac = clean_string(item.get('cr_ac'))
